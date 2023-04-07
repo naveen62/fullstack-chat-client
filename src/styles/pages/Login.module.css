@@ -1,0 +1,12 @@
+.container {
+    width: 100%;
+    height: 100vh;
+    background-color:#E0E0E0;
+}
+.flexContainer {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
