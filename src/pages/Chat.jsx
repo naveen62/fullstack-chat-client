@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {socket} from '../socket'
 
@@ -15,11 +15,18 @@ const Chat = () => {
     const [newGroup,setNewGroup] = useState('');
     const [groupChat,setGroupChat] = useState({});
     const [selectGroup,setGroupSelect] = useState('');
+    const [test,setTest] = useState('initial');
+
+    const inputText = useRef();
 
     const location = useLocation();
     const navigate = useNavigate();
 
     useEffect(() => {
+
+        const getTest = (callback) => {
+            callback(test)
+        }
         if(!location.state.username) {
             navigate('/');
             return
@@ -58,12 +65,40 @@ const Chat = () => {
             })
         })
 
+        // socket.on('newMessage',(message) => {
+        //     // console.log(message);
+        //     // console.log(selectGroup);
+        //     // console.log(message.group);
+        //     // getTest((cb) => {
+        //     //     console.log('react');
+        //     //     console.log(cb)
+        //     // })
+        //     // console.log(groupChat)
+        //     console.log('run')
+        //     setGroupChat((groupChat) => ({
+        //         ...groupChat,
+        //         [message.group]:{
+        //             ...groupChat[message.group],
+        //             unread: selectGroup !== message.group ? (groupChat[message.group].unread + 1) : 0,
+        //             messages:[...groupChat[message.group].messages,{
+        //                 username:message.username,
+        //                 message:message.text,
+        //                 createdAt:message.createdAt
+        //             }]
+        //         }
+        //     }))
+        // })
+
+    },[])
+    useEffect(() => {
+        socket.off('newMessage')
         socket.on('newMessage',(message) => {
-            console.log(message);
+            console.log(selectGroup);
             setGroupChat((groupChat) => ({
                 ...groupChat,
                 [message.group]:{
                     ...groupChat[message.group],
+                    unread: selectGroup !== message.group ? (groupChat[message.group].unread + 1) : 0,
                     messages:[...groupChat[message.group].messages,{
                         username:message.username,
                         message:message.text,
@@ -72,8 +107,8 @@ const Chat = () => {
                 }
             }))
         })
-
-    },[])
+        inputText.current && inputText.current.focus();
+    },[selectGroup])
 
     const handleGroupCreate = e => {
         e.preventDefault();
@@ -98,6 +133,14 @@ const Chat = () => {
     }
     const handleSelectGroup = (group) => {
         setGroupSelect(group);
+        setGroupChat((groupChat) => ({
+            ...groupChat,
+            [group]:{
+                ...groupChat[group],
+                unread:0
+            }
+        }))
+        console.log(inputText.current)
     }
     return(
         <div className={css.container}>
@@ -119,35 +162,40 @@ const Chat = () => {
                         <div className={css.groupList}>
                             {groups.map((group,index) => (
                                 <div className={css.listHolder} key={index} onClick={() => handleSelectGroup(group)}>
-                                    <GroupItem groupName={group} />
+                                    <GroupItem selected={group === selectGroup} groupName={group} unread={groupChat[group].unread} />
                                 </div>
                             ))}
                         </div>
                     </div>
                 </div>
                 <div className={css.chatContainer}>
-                    <div>
+                    <div className={css.messageContainer}>
                         {selectGroup && groupChat[selectGroup].messages.map((msg,index) => (
-                            <div key={index}>
-                                <div>{msg.username}</div>
-                                <div>{msg.message}</div>
+                            <div key={index} className={msg.username === location.state.username ? css.message_holder_cur : css.message_holder}>
+                                <div className={css.message_username}>{msg.username}</div>
+                                <div className={msg.username === location.state.username ? css.message_text_cur :css.message_text}>{msg.message}</div>
+                                <div className={css.message_date}>{msg.createdAt}</div>
                             </div>
                         ))}
                     </div>
                     <div className={css.messageSender}>
-                        <form onSubmit={handleMessageEmit}>
-                            <TextField 
-                            label='message'
-                            sx={{backgroundColor:'white'}}
-                            variant="outlined"
-                            size="small"
-                            placeholder="Type new room name"
-                            value={message}
-                            onChange={(e) => setMessage(e.target.value)}
-                            />
-                            <Button type="submit" variant="contained">Send</Button>
-                        </form>
-                    </div>
+                        {selectGroup && (
+                            <form className={css.messageSend} onSubmit={handleMessageEmit}>
+                                <TextField 
+                                fullWidth
+                                inputRef={inputText}
+                                label='message'
+                                sx={{backgroundColor:'white'}}
+                                variant="outlined"
+                                size="small"
+                                placeholder="Type new room name"
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)}
+                                />
+                                <Button type="submit" variant="contained">Send</Button>
+                            </form>
+                        )}
+                    </div>  
                 </div>
             </div>
         </div>

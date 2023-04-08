@@ -1,7 +1,7 @@
 .container {
     width: 100%;
     height: 100vh;
-    background-color: #EEEEEE;
+    background-color: #F5F5F5;
 }
 .flexContainer {
     width: 100%;
@@ -18,6 +18,8 @@
     width: 20%;
     height: 100vh;
     border-right: 2px solid black;
+    position: static;
+    overflow: scroll;
 }
 .groupList {
     display: flex;
@@ -33,4 +35,60 @@
 } 
 .listHolder {
     cursor: pointer;
+}
+.chatContainer {
+    width: 100%;
+    position: static;
+    overflow: scroll;
+}
+.messageSender {
+    width: 82.5%;
+    position: fixed;
+    bottom: 0px;
+    background-color: white;
+    padding: 7px;
+}
+.messageSend {
+    /* width: 100%; */
+    display: flex;
+    gap: 10px;
+}
+.messageContainer {
+    padding: 0 1.1rem;
+    margin-bottom: 3.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.message_username {
+    font-weight: 500;
+    color: #757575; 
+}
+.message_text {
+    width: fit-content;
+    background-color: #E0E0E0;
+    padding: 8px 8px;
+    border-radius: 4px;
+}
+.message_date {
+    font-size: x-small;
+    font-weight: bold;
+    color: #757575;
+}
+.message_holder {
+    display: flex;
+    flex-direction: column;
+}
+.message_holder_cur {
+    /* width: fit-content; */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    align-self: flex-end;
+}
+.message_text_cur {
+    width: fit-content;
+    background-color: #64B5F6;
+    padding: 8px 8px;
+    border-radius: 4px;
 }
