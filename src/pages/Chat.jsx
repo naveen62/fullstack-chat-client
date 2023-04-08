@@ -88,7 +88,24 @@ const Chat = () => {
         //         }
         //     }))
         // })
-
+        socket.on('userJoinedGroup',(group) => {
+            setGroupChat((groupChat) => ({
+                ...groupChat,
+                [group]:{
+                    ...groupChat[group],
+                    online:groupChat[group].online + 1
+                }
+            }))
+        })
+        socket.on('userLeftGroup',(group) => {
+            setGroupChat((groupChat) => ({
+                ...groupChat,
+                [group]:{
+                    ...groupChat[group],
+                    online:groupChat[group].online - 1
+                }
+            }))
+        })
     },[])
     useEffect(() => {
         socket.off('newMessage')
@@ -132,6 +149,13 @@ const Chat = () => {
         setMessage('')
     }
     const handleSelectGroup = (group) => {
+        if(!selectGroup) {
+            socket.emit('joinGroup',group);
+        }else if(selectGroup !== group) {
+            socket.emit('leaveGroup',selectGroup,() => {
+                socket.emit('joinGroup',group);
+            });
+        }
         setGroupSelect(group);
         setGroupChat((groupChat) => ({
             ...groupChat,
@@ -140,7 +164,6 @@ const Chat = () => {
                 unread:0
             }
         }))
-        console.log(inputText.current)
     }
     return(
         <div className={css.container}>
@@ -162,7 +185,7 @@ const Chat = () => {
                         <div className={css.groupList}>
                             {groups.map((group,index) => (
                                 <div className={css.listHolder} key={index} onClick={() => handleSelectGroup(group)}>
-                                    <GroupItem selected={group === selectGroup} groupName={group} unread={groupChat[group].unread} />
+                                    <GroupItem selected={group === selectGroup} groupName={group} online={groupChat[group].online} unread={groupChat[group].unread} />
                                 </div>
                             ))}
                         </div>

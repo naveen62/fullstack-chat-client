@@ -13,7 +13,7 @@ const GroupItem = (props) => {
             <div className={css.itemContainer}>
                 <div className={css.groupDetails}>
                     <div className={css.groupName}>{props.groupName}</div>
-                    <div className={css.online}>7 people joined</div>
+                    <div className={css.online}>{props.online} people joined</div>
                 </div>
                 <div>
                     {props.unread ? (
