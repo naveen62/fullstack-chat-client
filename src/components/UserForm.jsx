@@ -24,6 +24,8 @@ const UserForm = () => {
                 }
                 navigate('/chat',{state:{username:newUserName}})
             })
+        } else {
+            setShowError(true);
         }
     }
     return(
@@ -41,7 +43,6 @@ const UserForm = () => {
                         onChange={(e) => setUsername(e.target.value)}
                         fullWidth
                         size="small"
-                        required
                         />
                         <Button type="submit" fullWidth variant="contained">Join</Button>
                     </form>

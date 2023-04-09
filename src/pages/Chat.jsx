@@ -25,7 +25,8 @@ const Chat = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if(!location.state.username) {
+        if(!location.state || !location.state.username) {
+            toast.error('Please login using username')
             navigate('/');
             return
         }
@@ -35,13 +36,13 @@ const Chat = () => {
             socket.emit('getGroupsList');
         })
 
-        socket.on('sendGroupList',(groups) => {
-            setGroups(groups);
+        socket.on('sendGroupList',(groupsList) => {
+            setGroups(groupsList.groups);
             const groupChat = {};
-            groups.forEach((group) => {
+            groupsList.groups.forEach((group) => {
                 groupChat[group] = {
                     unread:0,
-                    online:0,
+                    online:groupsList.joinedCounts[group],
                     messages:[]
                 }
             })
@@ -62,24 +63,34 @@ const Chat = () => {
                 }
             })
         })
-        socket.on('userJoinedGroup',(group) => {
+        socket.on('userJoinedGroup',(joinGroup) => {
             setGroupChat((groupChat) => ({
                 ...groupChat,
-                [group]:{
-                    ...groupChat[group],
-                    online:groupChat[group].online + 1
+                [joinGroup.group]:{
+                    ...groupChat[joinGroup.group],
+                    online:joinGroup.online
                 }
             }))
         })
-        socket.on('userLeftGroup',(group) => {
+        socket.on('userLeftGroup',(leaveGroup) => {
             setGroupChat((groupChat) => ({
                 ...groupChat,
-                [group]:{
-                    ...groupChat[group],
-                    online:groupChat[group].online - 1
+                [leaveGroup.group]:{
+                    ...groupChat[leaveGroup.group],
+                    online:leaveGroup.online
                 }
             }))
         })
+
+        return () => {
+            socket.off('join');
+            socket.off('sendGroupList');
+            socket.off('groupCreated');
+            socket.off('userJoinedGroup');
+            socket.off('userLeftGroup');
+            socket.off('newMessage')
+            socket.disconnect();
+        }
     },[])
     useEffect(() => {
         socket.off('newMessage')
@@ -109,12 +120,14 @@ const Chat = () => {
 
     const handleGroupCreate = e => {
         e.preventDefault();
-        socket.emit('createGroup', newGroup,(err) => {
-            if(err) {
-                return toast.error(err);
-            }
-        });
-        setNewGroup('')
+        if(newGroup) {
+            socket.emit('createGroup', newGroup,(err) => {
+                if(err) {
+                    return toast.error(err);
+                }
+            });
+            setNewGroup('')
+        }
     }
     const handleMessageEmit = (e) => {
         e.preventDefault();
@@ -152,11 +165,12 @@ const Chat = () => {
                     <div className={css.groupFlex}>
                         <form onSubmit={handleGroupCreate} className={css.addRoomContainer}>
                             <TextField
+                            required
                             sx={{backgroundColor:'white'}}
                             variant="outlined" 
-                            label="Room Name"
+                            label="Group Name"
                             size="small"
-                            placeholder="Type new room name"
+                            placeholder="Type new group name"
                             value={newGroup}
                             onChange={(e) => setNewGroup(e.target.value)}
                             />
@@ -182,6 +196,9 @@ const Chat = () => {
                         ))}
                         <div ref={messageContainer}></div>
                     </div>
+                    {selectGroup && (<div className={css.selectHeader}>
+                        {selectGroup}
+                    </div>)}
                     <div className={css.messageSender}>
                         {selectGroup && (
                             <form className={css.messageSend} onSubmit={handleMessageEmit}>
@@ -192,7 +209,7 @@ const Chat = () => {
                                 sx={{backgroundColor:'white'}}
                                 variant="outlined"
                                 size="small"
-                                placeholder="Type new room name"
+                                placeholder="Type message"
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
                                 />
