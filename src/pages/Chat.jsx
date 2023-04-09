@@ -16,17 +16,15 @@ const Chat = () => {
     const [groupChat,setGroupChat] = useState({});
     const [selectGroup,setGroupSelect] = useState('');
     const [test,setTest] = useState('initial');
+    const [scroll,setScroll] = useState(false);
 
     const inputText = useRef();
+    const messageContainer = useRef();
 
     const location = useLocation();
     const navigate = useNavigate();
 
     useEffect(() => {
-
-        const getTest = (callback) => {
-            callback(test)
-        }
         if(!location.state.username) {
             navigate('/');
             return
@@ -64,30 +62,6 @@ const Chat = () => {
                 }
             })
         })
-
-        // socket.on('newMessage',(message) => {
-        //     // console.log(message);
-        //     // console.log(selectGroup);
-        //     // console.log(message.group);
-        //     // getTest((cb) => {
-        //     //     console.log('react');
-        //     //     console.log(cb)
-        //     // })
-        //     // console.log(groupChat)
-        //     console.log('run')
-        //     setGroupChat((groupChat) => ({
-        //         ...groupChat,
-        //         [message.group]:{
-        //             ...groupChat[message.group],
-        //             unread: selectGroup !== message.group ? (groupChat[message.group].unread + 1) : 0,
-        //             messages:[...groupChat[message.group].messages,{
-        //                 username:message.username,
-        //                 message:message.text,
-        //                 createdAt:message.createdAt
-        //             }]
-        //         }
-        //     }))
-        // })
         socket.on('userJoinedGroup',(group) => {
             setGroupChat((groupChat) => ({
                 ...groupChat,
@@ -110,7 +84,6 @@ const Chat = () => {
     useEffect(() => {
         socket.off('newMessage')
         socket.on('newMessage',(message) => {
-            console.log(selectGroup);
             setGroupChat((groupChat) => ({
                 ...groupChat,
                 [message.group]:{
@@ -123,9 +96,16 @@ const Chat = () => {
                     }]
                 }
             }))
+            setScroll((scroll) => !scroll);
         })
         inputText.current && inputText.current.focus();
     },[selectGroup])
+
+    useEffect(() => {
+        if(messageContainer.current) {
+            messageContainer.current.scrollIntoView({behavior: 'smooth'})
+        }
+    },[scroll])
 
     const handleGroupCreate = e => {
         e.preventDefault();
@@ -200,6 +180,7 @@ const Chat = () => {
                                 <div className={css.message_date}>{msg.createdAt}</div>
                             </div>
                         ))}
+                        <div ref={messageContainer}></div>
                     </div>
                     <div className={css.messageSender}>
                         {selectGroup && (

@@ -5,6 +5,8 @@ import Paper from '@mui/material/Paper';
 import css from '../styles/components/UserForm.module.css';
 import { Button, TextField } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import {socket} from '../socket'
+import { toast } from "react-toastify";
 
 const UserForm = () => {
     const [username,setUsername] = useState('');
@@ -14,9 +16,14 @@ const UserForm = () => {
 
     const handleSubmit = e => {
         e.preventDefault();
-        setShowError(true);
         if(username) {
-            navigate('/chat',{state:{username}})
+            socket.connect();
+            socket.emit('checkUsername',username,(error,newUserName) => {
+                if(error) {
+                    return toast.error('Username is already taken, Please again another username')
+                }
+                navigate('/chat',{state:{username:newUserName}})
+            })
         }
     }
     return(
@@ -34,6 +41,7 @@ const UserForm = () => {
                         onChange={(e) => setUsername(e.target.value)}
                         fullWidth
                         size="small"
+                        required
                         />
                         <Button type="submit" fullWidth variant="contained">Join</Button>
                     </form>
