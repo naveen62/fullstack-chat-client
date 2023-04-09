@@ -120,12 +120,14 @@ const Chat = () => {
 
     const handleGroupCreate = e => {
         e.preventDefault();
-        socket.emit('createGroup', newGroup,(err) => {
-            if(err) {
-                return toast.error(err);
-            }
-        });
-        setNewGroup('')
+        if(newGroup) {
+            socket.emit('createGroup', newGroup,(err) => {
+                if(err) {
+                    return toast.error(err);
+                }
+            });
+            setNewGroup('')
+        }
     }
     const handleMessageEmit = (e) => {
         e.preventDefault();
@@ -163,6 +165,7 @@ const Chat = () => {
                     <div className={css.groupFlex}>
                         <form onSubmit={handleGroupCreate} className={css.addRoomContainer}>
                             <TextField
+                            required
                             sx={{backgroundColor:'white'}}
                             variant="outlined" 
                             label="Group Name"
