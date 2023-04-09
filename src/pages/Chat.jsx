@@ -193,6 +193,9 @@ const Chat = () => {
                         ))}
                         <div ref={messageContainer}></div>
                     </div>
+                    {selectGroup && (<div className={css.selectHeader}>
+                        {selectGroup}
+                    </div>)}
                     <div className={css.messageSender}>
                         {selectGroup && (
                             <form className={css.messageSend} onSubmit={handleMessageEmit}>
