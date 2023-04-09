@@ -35,13 +35,13 @@ const Chat = () => {
             socket.emit('getGroupsList');
         })
 
-        socket.on('sendGroupList',(groups) => {
-            setGroups(groups);
+        socket.on('sendGroupList',(groupsList) => {
+            setGroups(groupsList.groups);
             const groupChat = {};
-            groups.forEach((group) => {
+            groupsList.groups.forEach((group) => {
                 groupChat[group] = {
                     unread:0,
-                    online:0,
+                    online:groupsList.joinedCounts[group],
                     messages:[]
                 }
             })
@@ -62,21 +62,21 @@ const Chat = () => {
                 }
             })
         })
-        socket.on('userJoinedGroup',(group) => {
+        socket.on('userJoinedGroup',(joinGroup) => {
             setGroupChat((groupChat) => ({
                 ...groupChat,
-                [group]:{
-                    ...groupChat[group],
-                    online:groupChat[group].online + 1
+                [joinGroup.group]:{
+                    ...groupChat[joinGroup.group],
+                    online:joinGroup.online
                 }
             }))
         })
-        socket.on('userLeftGroup',(group) => {
+        socket.on('userLeftGroup',(leaveGroup) => {
             setGroupChat((groupChat) => ({
                 ...groupChat,
-                [group]:{
-                    ...groupChat[group],
-                    online:groupChat[group].online - 1
+                [leaveGroup.group]:{
+                    ...groupChat[leaveGroup.group],
+                    online:leaveGroup.online
                 }
             }))
         })
