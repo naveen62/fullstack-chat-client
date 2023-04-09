@@ -25,7 +25,8 @@ const Chat = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if(!location.state.username) {
+        if(!location.state || !location.state.username) {
+            toast.error('Please login using username')
             navigate('/');
             return
         }
@@ -80,6 +81,16 @@ const Chat = () => {
                 }
             }))
         })
+
+        return () => {
+            socket.off('join');
+            socket.off('sendGroupList');
+            socket.off('groupCreated');
+            socket.off('userJoinedGroup');
+            socket.off('userLeftGroup');
+            socket.off('newMessage')
+            socket.disconnect();
+        }
     },[])
     useEffect(() => {
         socket.off('newMessage')
@@ -154,9 +165,9 @@ const Chat = () => {
                             <TextField
                             sx={{backgroundColor:'white'}}
                             variant="outlined" 
-                            label="Room Name"
+                            label="Group Name"
                             size="small"
-                            placeholder="Type new room name"
+                            placeholder="Type new group name"
                             value={newGroup}
                             onChange={(e) => setNewGroup(e.target.value)}
                             />
@@ -192,7 +203,7 @@ const Chat = () => {
                                 sx={{backgroundColor:'white'}}
                                 variant="outlined"
                                 size="small"
-                                placeholder="Type new room name"
+                                placeholder="Type message"
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
                                 />
